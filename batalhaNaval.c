@@ -1,14 +1,30 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 // Desafio Batalha Naval - MateCheck
 // Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
 // Siga os comentários para implementar cada parte do desafio.
 
 int main() {
-    // Nível Novato - Posicionamento dos Navios
-    // Sugestão: Declare uma matriz bidimensional para representar o tabuleiro (Ex: int tabuleiro[5][5];).
-    // Sugestão: Posicione dois navios no tabuleiro, um verticalmente e outro horizontalmente.
-    // Sugestão: Utilize `printf` para exibir as coordenadas de cada parte dos navios.
+
+    // Ativa ou desativa modo debug
+    bool isDebugging = true;
+
+    // Declarando arrays representando os navios
+    int navioA[3] = {3,3,3};
+    int navioB[3] = {3,3,3};
+    
+    // Declarando matrix para o tabuleiro e inicializando com zeros
+    int tabuleiro[11][11] = {0};
+
+    // Posicionando navio A na vertical
+    alocarNavio(tabuleiro, navioA, 1, 1, true, isDebugging);
+
+    // Posicionando navio B na horizontal
+    alocarNavio(tabuleiro, navioB, 1, 5, false, isDebugging);
+
+    // Exibindo tabuleiro no terminal
+    exibirTabuleiro(tabuleiro);
 
     // Nível Aventureiro - Expansão do Tabuleiro e Posicionamento Diagonal
     // Sugestão: Expanda o tabuleiro para uma matriz 10x10.
@@ -37,4 +53,43 @@ int main() {
     // 0 0 1 0 0
 
     return 0;
+}
+
+// Esta função copia os elementos do navio no tabuleiro, de acordo com a posição e orientação informados
+void alocarNavio(int tabuleiro[10][10], int navio[], int x, int y, bool isVertical, bool isDebugging){
+    int navioLength = sizeof(navio)/sizeof(navio[0]);
+    for (int i = 0; i <= navioLength; i++){
+        // Verifica se o lugar do tabuleiro já está ocupado por outro navio e lanca um erro
+        if (tabuleiro[x][y] != 0){
+            lancarExcecao("Foi tentado alocar elemento dum navio, porém já está ocupada por outro!\nRevise as alocações para garantir que não haja sobreposições");
+        }
+
+        tabuleiro[x][y] = navio [i];
+
+        // Caso esteja no modo debug, detalha a alocação de cada um dos elementos do navio no tabuleiro
+        if (isDebugging){
+            ("setando valor %d na posicao x %d y %d no tabuleiro\n",navio[i], x, y);
+        }
+        if (isVertical){
+            x++;
+        }else{
+            y++;
+        }
+    }
+}
+
+// Imprime na tela o tabuleiro atual
+void exibirTabuleiro(int tabuleiro[10][10]){
+    printf("----- TABULEIRO BATALHA NAVAL -----\n\n");
+        for (int x = 9; x >= 0; x--){
+        for (int y = 0; y <= 10; y++){
+            printf(" %d",tabuleiro[x][y]);
+        }
+        printf("\n");
+    }
+}
+
+// Implementa uma funcao para mandar um aviso pelo console que algo saiu do esperado
+void lancarExcecao(char mensagem[]){
+    printf("\033[31m\n\nAviso!!!\n\nMensagem: %s\n\n\033[0m\n", mensagem);
 }
