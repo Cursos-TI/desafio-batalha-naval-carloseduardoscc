@@ -13,23 +13,20 @@ int main() {
     // Declarando arrays representando os navios
     int navioA[3] = {3,3,3};
     int navioB[3] = {3,3,3};
+    int navioC[3] = {3,3,3};
+    int navioD[3] = {3,3,3};
     
     // Declarando matrix para o tabuleiro e inicializando com zeros
     int tabuleiro[11][11] = {0};
 
-    // Posicionando navio A na vertical
-    alocarNavio(tabuleiro, navioA, 1, 1, true, isDebugging);
-
-    // Posicionando navio B na horizontal
-    alocarNavio(tabuleiro, navioB, 1, 5, false, isDebugging);
+    // Posicionando navios por meio de pontos cardeais
+    alocarNavio(tabuleiro, navioA, 1, 1, "N", isDebugging);
+    alocarNavio(tabuleiro, navioB, 1, 5, "E", isDebugging);
+    alocarNavio(tabuleiro, navioB, 5, 5, "NW", isDebugging);
+    alocarNavio(tabuleiro, navioB, 9, 9, "SW", isDebugging);
 
     // Exibindo tabuleiro no terminal
     exibirTabuleiro(tabuleiro);
-
-    // Nível Aventureiro - Expansão do Tabuleiro e Posicionamento Diagonal
-    // Sugestão: Expanda o tabuleiro para uma matriz 10x10.
-    // Sugestão: Posicione quatro navios no tabuleiro, incluindo dois na diagonal.
-    // Sugestão: Exiba o tabuleiro completo no console, mostrando 0 para posições vazias e 3 para posições ocupadas.
 
     // Nível Mestre - Habilidades Especiais com Matrizes
     // Sugestão: Crie matrizes para representar habilidades especiais como cone, cruz, e octaedro.
@@ -56,12 +53,16 @@ int main() {
 }
 
 // Esta função copia os elementos do navio no tabuleiro, de acordo com a posição e orientação informados
-void alocarNavio(int tabuleiro[10][10], int navio[], int x, int y, bool isVertical, bool isDebugging){
+void alocarNavio(int tabuleiro[10][10], int navio[], int x, int y, char orientacao[], bool isDebugging){
     int navioLength = sizeof(navio)/sizeof(navio[0]);
     for (int i = 0; i <= navioLength; i++){
         // Verifica se o lugar do tabuleiro já está ocupado por outro navio e lanca um erro
         if (tabuleiro[x][y] != 0){
-            lancarExcecao("Foi tentado alocar elemento dum navio, porém já está ocupada por outro!\nRevise as alocações para garantir que não haja sobreposições");
+            lancarAviso("Foi tentado alocar elemento dum navio numa posição já ocupada por outro!\nRevise as alocações para garantir que não haja sobreposições");
+        }
+        // Verifica se houve posicionamento fora do tabuleiro
+        if (x > 10 || x < 0 || y > 10 || y < 0){
+            lancarAviso("Foi tentado alocar elemento dum navio numa posição fora do tabuleiro!\nRevise as alocações para garantir que os navios estejam dentro do tabuleiro");
         }
 
         tabuleiro[x][y] = navio [i];
@@ -70,11 +71,16 @@ void alocarNavio(int tabuleiro[10][10], int navio[], int x, int y, bool isVertic
         if (isDebugging){
             ("setando valor %d na posicao x %d y %d no tabuleiro\n",navio[i], x, y);
         }
-        if (isVertical){
-            x++;
-        }else{
-            y++;
-        }
+
+        // Implementa movimentação do ponteiro que aloca as partes do navio usando pontos cardeais
+        // Ex.:
+        // "N" navio sendo alocado em direção ao norte
+        // "W" navio sendo alocado em direção ao oeste
+        // "SE" ativa dois if's e executa y-- e x++, fazendo a movimentação do ponteiro no sudeste
+        if (strchr(orientacao, 'N') == 0) x--;
+        if (strchr(orientacao, 'E') == 0) y--;
+        if (strchr(orientacao, 'S') == 0) x++;
+        if (strchr(orientacao, 'W') == 0) y++;
     }
 }
 
@@ -90,6 +96,6 @@ void exibirTabuleiro(int tabuleiro[10][10]){
 }
 
 // Implementa uma funcao para mandar um aviso pelo console que algo saiu do esperado
-void lancarExcecao(char mensagem[]){
+void lancarAviso(char mensagem[]){
     printf("\033[31m\n\nAviso!!!\n\nMensagem: %s\n\n\033[0m\n", mensagem);
 }
