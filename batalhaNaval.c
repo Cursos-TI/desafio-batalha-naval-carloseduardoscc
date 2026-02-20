@@ -15,6 +15,25 @@ int main() {
     int navioB[3] = {3,3,3};
     int navioC[3] = {3,3,3};
     int navioD[3] = {3,3,3};
+
+    // Declarando arrays representando as habilidades
+    int habilidadeCone[3][5] = {
+        {0,0,1,0,0},
+        {0,1,1,1,0},
+        {1,1,1,1,1}
+    };
+
+    int habilidadeCruz[3][5] = {
+        {0,0,1,0,0},
+        {1,1,1,1,1},
+        {0,0,1,0,0}
+    };
+
+    int habilidadeOctaedro[3][5] = {
+        {0,0,1,0,0},
+        {0,1,1,1,0},
+        {0,0,1,0,0}
+    };
     
     // Declarando matrix para o tabuleiro e inicializando com zeros
     int tabuleiro[11][11] = {0};
@@ -25,29 +44,13 @@ int main() {
     alocarNavio(tabuleiro, navioB, 5, 5, "NW", isDebugging);
     alocarNavio(tabuleiro, navioB, 9, 9, "SW", isDebugging);
 
+    // Aplicando habilidades
+    lancarHabilidade(tabuleiro, habilidadeOctaedro, 5, 7);
+    lancarHabilidade(tabuleiro, habilidadeCone, 8, 1);
+    lancarHabilidade(tabuleiro, habilidadeCruz, 1, 5);
+
     // Exibindo tabuleiro no terminal
     exibirTabuleiro(tabuleiro);
-
-    // Nível Mestre - Habilidades Especiais com Matrizes
-    // Sugestão: Crie matrizes para representar habilidades especiais como cone, cruz, e octaedro.
-    // Sugestão: Utilize estruturas de repetição aninhadas para preencher as áreas afetadas por essas habilidades no tabuleiro.
-    // Sugestão: Exiba o tabuleiro com as áreas afetadas, utilizando 0 para áreas não afetadas e 1 para áreas atingidas.
-
-    // Exemplos de exibição das habilidades:
-    // Exemplo para habilidade em cone:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 1 1 1 1 1
-    
-    // Exemplo para habilidade em octaedro:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 0 0 1 0 0
-
-    // Exemplo para habilidade em cruz:
-    // 0 0 1 0 0
-    // 1 1 1 1 1
-    // 0 0 1 0 0
 
     return 0;
 }
@@ -56,16 +59,7 @@ int main() {
 void alocarNavio(int tabuleiro[10][10], int navio[], int x, int y, char orientacao[], bool isDebugging){
     int navioLength = sizeof(navio)/sizeof(navio[0]);
     for (int i = 0; i <= navioLength; i++){
-        // Verifica se o lugar do tabuleiro já está ocupado por outro navio e lanca um erro
-        if (tabuleiro[x][y] != 0){
-            lancarAviso("Foi tentado alocar elemento dum navio numa posição já ocupada por outro!\nRevise as alocações para garantir que não haja sobreposições");
-        }
-        // Verifica se houve posicionamento fora do tabuleiro
-        if (x > 10 || x < 0 || y > 10 || y < 0){
-            lancarAviso("Foi tentado alocar elemento dum navio numa posição fora do tabuleiro!\nRevise as alocações para garantir que os navios estejam dentro do tabuleiro");
-        }
-
-        tabuleiro[x][y] = navio [i];
+        trocarElementoTabuleiro(tabuleiro, x, y, 3);
 
         // Caso esteja no modo debug, detalha a alocação de cada um dos elementos do navio no tabuleiro
         if (isDebugging){
@@ -98,4 +92,39 @@ void exibirTabuleiro(int tabuleiro[10][10]){
 // Implementa uma funcao para mandar um aviso pelo console que algo saiu do esperado
 void lancarAviso(char mensagem[]){
     printf("\033[31m\n\nAviso!!!\n\nMensagem: %s\n\n\033[0m\n", mensagem);
+}
+
+// Implementa um funcao que aplica uma habilidade no tabuleiro com base no ponto de ataque
+void lancarHabilidade(int tabuleiro[10][10], int habilidade[3][5], int posicaoXHabilidade, int posicaoYHabilidade){
+    int ponteiroXTabuleiro = posicaoXHabilidade - 2;
+    int ponteiroYTabuleiro = posicaoYHabilidade + 1;
+
+    int larguraHabilidade = 5;
+    int comprimentoHabilidade = 3;
+
+    for (int ponteiroYHabilidade = 0; ponteiroYHabilidade < comprimentoHabilidade; ponteiroYHabilidade++, ponteiroYTabuleiro--){
+        for (int ponteiroXHabilidade = 0; ponteiroXHabilidade < larguraHabilidade; ponteiroXHabilidade++, ponteiroXTabuleiro++){
+            int elementoCorrespondenteDaHabilidade = habilidade[ponteiroYHabilidade][ponteiroXHabilidade];
+            if (elementoCorrespondenteDaHabilidade != 0){
+                trocarElementoTabuleiro(tabuleiro, ponteiroYTabuleiro, ponteiroXTabuleiro, 5);
+            }
+        }
+        ponteiroXTabuleiro = posicaoXHabilidade - 2;
+    }
+}
+
+// Abstrai posicionamento de elementos no tabuleiro com verificacao de erros
+void trocarElementoTabuleiro(int tabuleiro[10][10], int posicaoX, int posicaoY, int elemento){
+    // Lanca um erro ao tentar sobrepor um navio sobre outro já no tabuleiro
+    if (tabuleiro[posicaoX][posicaoY] != 0 && elemento == 3){
+        lancarAviso("Foi tentado alocar elemento dum navio numa posição já ocupada por outro!\nRevise as alocações para garantir que não haja sobreposições");
+        return;
+    }
+    // Verifica se houve posicionamento fora do tabuleiro, permite que habilidades sobresaiam do tabuleiro
+    if ((posicaoX > 10 || posicaoX < 0 || posicaoY > 10 || posicaoY < 0) && elemento != 5 && elemento != 0){
+        lancarAviso("Foi tentado alocar elemento numa posição fora do tabuleiro!\nRevise as alocações para garantir que estejam dentro do tabuleiro");
+        return;
+    }
+
+    tabuleiro[posicaoX][posicaoY] = elemento;
 }
